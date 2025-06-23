@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trading Clock</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; }
+        .market { 
+            display: inline-block; 
+            width: 120px; 
+            margin: 10px; 
+            padding: 10px;
+            border-radius: 5px;
+            background: #f0f0f0;
+        }
+        .time { font-size: 24px; font-weight: bold; margin: 5px 0; }
+        .open { background: #4CAF50; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Global Trading Sessions</h1>
+    <div id="local">Local: <span id="local-time">--:--:--</span></div>
+    
+    <div class="market" id="sydney">
+        Sydney<br>
+        <div class="time" id="sydney-time">--:--</div>
+        GMT+10
+    </div>
+    
+    <div class="market" id="tokyo">
+        Tokyo<br>
+        <div class="time" id="tokyo-time">--:--</div>
+        GMT+9
+    </div>
+    
+    <div class="market" id="london">
+        London<br>
+        <div class="time" id="london-time">--:--</div>
+        GMT+0
+    </div>
+    
+    <div class="market" id="newyork">
+        New York<br>
+        <div class="time" id="newyork-time">--:--</div>
+        GMT-5
+    </div>
+    
+    <div class="market" id="frankfurt">
+        Frankfurt<br>
+        <div class="time" id="frankfurt-time">--:--</div>
+        GMT+1
+    </div>
+    
+    <div style="margin-top: 20px; padding: 10px;" id="status">Loading...</div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            
+            // Update local time
+            document.getElementById('local-time').textContent = now.toLocaleTimeString();
+            
+            // Update market times
+            updateMarket('sydney', 10, now);
+            updateMarket('tokyo', 9, now);
+            updateMarket('london', 1, now);
+            updateMarket('newyork', -4, now);
+            updateMarket('frankfurt', 2, now);
+            
+            setTimeout(updateClock, 1000);
+        }
+        
+        function updateMarket(market, offset, now) {
+            // Calculate market time
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const marketTime = new Date(utc + (offset * 3600000));
+            
+            // Display time
+            const timeStr = marketTime.getHours().toString().padStart(2,'0') + ':' + 
+                           marketTime.getMinutes().toString().padStart(2,'0');
+            document.getElementById(market+'-time').textContent = timeStr;
+            
+            // Check if market is open (simplified)
+            const hours = marketTime.getHours();
+            const isOpen = (
+                (market === 'sydney' && hours >= 9 && hours < 17) ||
+                (market === 'tokyo' && hours >= 9 && hours < 15) ||
+                (market === 'london' && hours >= 9 && hours < 16.5) ||
+                (market === 'newyork' && hours >= 9.5 && hours < 16) ||
+                (market === 'frankfurt' && hours >= 8 && hours < 17)
+            );
+            
+            // Update status
+            const elem = document.getElementById(market);
+            elem.className = 'market' + (isOpen ? ' open' : '');
+            
+            // Update status text
+            const openMarkets = ['sydney','tokyo','london','newyork','frankfurt'].filter(m => 
+                document.getElementById(m).classList.contains('open')
+            );
+            document.getElementById('status').textContent = openMarkets.length 
+                ? `OPEN: ${openMarkets.join(', ')}`
+                : 'All markets closed';
+        }
+        
+        // Start the clock
+        updateClock();
+    </script>
+</body>
+</html>
